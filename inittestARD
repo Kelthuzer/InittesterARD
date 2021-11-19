@@ -1,0 +1,48 @@
+#include "HID-Project.h" 
+#include "HID.h" 
+ 
+uint32_t timer = millis();    
+ 
+void setup () { 
+  BootKeyboard.begin(); 
+  
+  pinMode(A1, OUTPUT); 
+  pinMode (LED_BUILTIN, OUTPUT); 
+ 
+} 
+void loop () { 
+   
+  if ((BootKeyboard.getLeds() & LED_CAPS_LOCK) == 0) {          // Если светодиод Caps Lock не горит, то 
+label:                                                          // Метка, которая необходима дря работы оператора goto 
+    if (millis() - timer > 500) {                               // каждые 500 мс эмулируем нажатие на кнопку Caps Lock 
+      BootKeyboard.write(KEY_CAPS_LOCK); 
+      //delay (10); 
+      timer = millis();                                         // Сбрасываем таймер, ждём снова 500 мс. 
+    } 
+    digitalWrite(LED_BUILTIN, HIGH); 
+    delay (500); 
+    digitalWrite(LED_BUILTIN, LOW); 
+    delay (500); 
+    digitalWrite (LED_BUILTIN, LED_BUILTIN); 
+  } 
+  if ((BootKeyboard.getLeds() & LED_CAPS_LOCK) == 0x02) {       // Если светодиод Caps Lock горит, то 
+    while (1) {                                                 // уходим в бесконечный цикл 
+      noTone(A1); 
+      delay (100); 
+      digitalWrite(LED_BUILTIN, HIGH); 
+      delay (50); 
+      tone(A1, 800); 
+      delay (50); 
+      digitalWrite(LED_BUILTIN, LOW); 
+      delay (100); 
+      digitalWrite(A1, A1); 
+      digitalWrite (LED_BUILTIN, LED_BUILTIN); 
+      if ((BootKeyboard.getLeds() & LED_CAPS_LOCK) == 0) {      // Условие для выхода из бесконечного цикла. Если светодиод Caps Lock не горит, 
+        noTone(A1);                                          // то тушим все светодиоды 
+        digitalWrite(LED_BUILTIN, LOW); 
+        goto label;                                             // и переходим в начало программы. 
+      } 
+    } 
+  } 
+}
+// @OKAS43
